@@ -635,7 +635,7 @@
 			<!-- Шестой ряд -->
 			<div class="button-row">
 				<button
-					class="btn number-btn zero-btn {lastPressedButton === '0' ? 'pressed' : ''}"
+					class="btn number-btn {lastPressedButton === '0' ? 'pressed' : ''}"
 					onclick={() => {
 						animateButton('0');
 						inputDigit('0');
@@ -664,6 +664,7 @@
 				>
 					<i class="ph ph-equals"></i>
 				</button>
+				<div class="btn-spacer"></div>
 			</div>
 		</div>
 	</div>
@@ -716,8 +717,10 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 1rem;
-		max-width: 400px;
-		margin: 0 auto;
+		width: 100%;
+		height: 100%;
+		flex: 1;
+		margin: 0;
 	}
 
 	/* Панель настроек */
@@ -828,8 +831,12 @@
 		backdrop-filter: blur(20px);
 		-webkit-backdrop-filter: blur(20px);
 		width: 100%;
-		max-width: 380px;
-		min-height: 600px;
+		height: 100%;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		max-width: none;
+		min-height: 0;
 		animation: fadeIn 0.5s ease-out;
 	}
 
@@ -977,20 +984,25 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
+		flex: 1;
+		min-height: 0;
 	}
 
 	.button-row {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		gap: 0.75rem;
+		flex: 1;
+		min-height: 0;
 	}
 
 	.button-row:last-child {
-		grid-template-columns: 2fr 1fr 1fr;
+		grid-template-columns: repeat(4, 1fr);
 	}
 
 	.btn {
-		height: 60px;
+		min-height: 50px;
+		height: 100%;
 		border: none;
 		border-radius: 12px;
 		font-size: 1.2rem;
@@ -1068,7 +1080,6 @@
 		background: var(--accent-green);
 		color: white;
 		border: 2px solid var(--accent-green);
-		grid-column: span 2;
 	}
 
 	.equals-btn:hover {
@@ -1077,31 +1088,66 @@
 		box-shadow: var(--shadow-medium);
 	}
 
-	.zero-btn {
-		grid-column: span 1;
+	.btn-spacer {
+		visibility: hidden;
 	}
 
 	/* Адаптивность */
-	@media (max-width: 480px) {
+	@media (max-width: 600px) {
 		.calculator {
 			padding: 1rem;
-			max-width: 100%;
-			margin: 0 1rem;
+			border-radius: 12px;
 		}
 
 		.display-screen {
 			font-size: 2rem;
 			padding: 1rem;
+			min-height: 60px;
 		}
 
 		.btn {
-			height: 50px;
+			min-height: 45px;
 			font-size: 1rem;
+			border-radius: 8px;
 		}
 
 		.settings-panel {
 			min-width: 250px;
 			padding: 1rem;
+		}
+
+		.buttons {
+			gap: 0.5rem;
+		}
+
+		.button-row {
+			gap: 0.5rem;
+		}
+	}
+
+	@media (min-width: 601px) and (max-width: 800px) {
+		.btn {
+			font-size: 1.1rem;
+			min-height: 55px;
+		}
+
+		.display-screen {
+			font-size: 2.2rem;
+		}
+	}
+
+	@media (min-width: 801px) {
+		.btn {
+			font-size: 1.3rem;
+			min-height: 60px;
+		}
+
+		.display-screen {
+			font-size: 2.8rem;
+		}
+
+		.calculator {
+			padding: 2rem;
 		}
 	}
 
