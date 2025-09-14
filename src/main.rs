@@ -8,9 +8,9 @@ use iced::window;
 // Define the Rubik font
 const RUBIK_FONT: iced::Font = iced::Font::with_name("Rubik");
 
-// Define calculator state
+// Define Calcutron state
 #[derive(Default)]
-struct Calculator {
+struct Calcutron {
     // Current display value
     display: String,
     // History display value (previous operations)
@@ -73,9 +73,9 @@ enum Message {
     Ignore,
 }
 
-impl Calculator {
+impl Calcutron {
     fn new() -> (Self, Task<Message>) {
-        let mut calculator = Calculator::default();
+        let mut calculator = Calcutron::default();
         calculator.display = "0".to_string();
         calculator.history = "".to_string();
         calculator.always_on_top = false;
@@ -83,7 +83,7 @@ impl Calculator {
     }
 
     fn title(&self) -> String {
-        String::from("Calculator")
+        String::from("Calcutron")
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
@@ -336,7 +336,7 @@ impl Calculator {
                 
                 // Mode text
                 container(text("Базовый")
-                    .size(20) // Match calculator button font size
+                    .size(20) // Match Calcutron button font size
                     .font(RUBIK_FONT)
                     .style(|_theme: &Theme| {
                         text::Style { color: Some(iced::Color::WHITE) }
@@ -691,8 +691,8 @@ fn format_number(value: f64) -> String {
 }
 
 fn main() -> iced::Result {
-    iced::application(Calculator::title, Calculator::update, Calculator::view)
-        .subscription(|_state: &Calculator| {
+    iced::application(Calcutron::title, Calcutron::update, Calcutron::view)
+        .subscription(|_state: &Calcutron| {
             iced::event::listen_with(|event, _status, _id| {
                 if let iced::Event::Window(window_event) = event {
                     Some(Message::WindowEvent(window_event))
@@ -707,6 +707,6 @@ fn main() -> iced::Result {
             ..Default::default()
         })
         .font(include_bytes!("../static/fonts/Rubik-Regular.ttf").as_slice())
-        .theme(|_state: &Calculator| Theme::Dark)
-        .run_with(Calculator::new)
+        .theme(|_state: &Calcutron| Theme::Dark)
+        .run_with(Calcutron::new)
 }

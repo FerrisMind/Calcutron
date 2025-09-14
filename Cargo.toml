@@ -3,10 +3,10 @@ name = "calcutron"
 version = "0.1.0"
 edition = "2024"
 authors = ["Calcutron Contributors"]
-description = "A Reverse Polish Notation (RPN) calculator implemented in Rust with Iced GUI"
+description = "Calculator implemented in Rust with Iced GUI like Microsoft Calculator UI"
 repository = "https://github.com/yourusername/calcutron"
 license = "MIT"
-keywords = ["calculator", "rpn", "gui", "iced"]
+keywords = ["calcutron", "rpn", "gui", "iced"]
 categories = ["gui"]
 
 [dependencies]

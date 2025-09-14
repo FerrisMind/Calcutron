@@ -1,10 +1,10 @@
-# Calcutron - Calculator
+# Calcutron
 
-A calculator application implemented in Rust using the Iced GUI framework. Features a traditional calculator UX similar to Microsoft or Apple calculators with RPN (Reverse Polish Notation) functionality.
+A Calcutron application implemented in Rust using the Iced GUI framework. Features a traditional Calcutron UX similar to Microsoft or Apple Calcutron with RPN (Reverse Polish Notation) functionality.
 
 ## Features
 
-- **Traditional Calculator UI**: Familiar layout and interaction pattern similar to standard calculators
+- **Traditional Calcutron UI**: Familiar layout and interaction pattern similar to standard Calcutron
 - **RPN Functionality**: Supports Reverse Polish Notation calculations for advanced users
 - **Basic Operations**: Addition, subtraction, multiplication, and division
 - **Stack Visualization**: Shows the current state of the calculation stack
@@ -23,7 +23,7 @@ cargo run
 
 ## Usage
 
-### Traditional Calculator Mode:
+### Traditional Calcutron Mode:
 1. Click number buttons (0-9) to enter digits
 2. Click operator buttons (+, -, *, /) to perform calculations
 3. Click "=" or "↑" to push the current number to the stack
@@ -39,7 +39,7 @@ cargo run
 
 ## Stack Visualization
 
-The top of the calculator shows the current stack state, displaying up to 3 of the most recent entries.
+The top of the Calcutron shows the current stack state, displaying up to 3 of the most recent entries.
 
 ## Dependencies
 
