@@ -1,58 +1,50 @@
-# Svelte library
+# Calcutron - Calculator
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+A calculator application implemented in Rust using the Iced GUI framework. Features a traditional calculator UX similar to Microsoft or Apple calculators with RPN (Reverse Polish Notation) functionality.
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+## Features
 
-## Creating a project
+- **Traditional Calculator UI**: Familiar layout and interaction pattern similar to standard calculators
+- **RPN Functionality**: Supports Reverse Polish Notation calculations for advanced users
+- **Basic Operations**: Addition, subtraction, multiplication, and division
+- **Stack Visualization**: Shows the current state of the calculation stack
+- **Error Handling**: Handles division by zero, stack overflow, and invalid input
+- **Multiple Clear Options**: Clear (C) for current entry and All Clear (AC) for everything
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Installation
 
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+1. Make sure you have Rust installed (https://www.rust-lang.org/)
+2. Clone this repository
+3. Run the application:
 
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+cargo run
 ```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+## Usage
 
-## Building
+### Traditional Calculator Mode:
+1. Click number buttons (0-9) to enter digits
+2. Click operator buttons (+, -, *, /) to perform calculations
+3. Click "=" or "↑" to push the current number to the stack
+4. Use "C" to clear the current entry
+5. Use "AC" to clear everything
 
-To build your library:
+### RPN Mode:
+1. Enter a number
+2. Click "↑" or "=" to push it to the stack
+3. Enter another number
+4. Click an operator to perform the calculation
+5. The result will be displayed and remain on the stack for further calculations
 
-```bash
-npm run package
-```
+## Stack Visualization
 
-To create a production version of your showcase app:
+The top of the calculator shows the current stack state, displaying up to 3 of the most recent entries.
 
-```bash
-npm run build
-```
+## Dependencies
 
-You can preview the production build with `npm run preview`.
+- [Iced](https://github.com/iced-rs/iced) - A cross-platform GUI library for Rust
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## License
 
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```bash
-npm publish
-```
+This project is licensed under the MIT License - see the LICENSE file for details.
