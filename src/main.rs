@@ -3,6 +3,10 @@ use iced::widget::{
 };
 use iced::{Center, Element, Fill, Length, Task, Theme};
 use iced::widget::svg::Handle;
+use iced::window;
+
+// Define the Rubik font
+const RUBIK_FONT: iced::Font = iced::Font::with_name("Rubik");
 
 // Define calculator state
 #[derive(Default)]
@@ -17,6 +21,10 @@ struct Calculator {
     operation: Option<Operation>,
     // Whether we're waiting for the next operand
     waiting_for_operand: bool,
+    // Always on top state
+    always_on_top: bool,
+    // Window ID
+    window_id: Option<window::Id>,
 }
 
 // Define operations
@@ -55,6 +63,14 @@ enum Message {
     Percentage,
     // Reciprocal
     Reciprocal,
+    // List button
+    ShowList,
+    // Toggle always on top
+    ToggleAlwaysOnTop,
+    // Window event
+    WindowEvent(window::Event),
+    // Ignore event
+    Ignore,
 }
 
 impl Calculator {
@@ -62,6 +78,7 @@ impl Calculator {
         let mut calculator = Calculator::default();
         calculator.display = "0".to_string();
         calculator.history = "".to_string();
+        calculator.always_on_top = false;
         (calculator, Task::none())
     }
 
@@ -92,6 +109,7 @@ impl Calculator {
                         self.display.push_str(&digit.to_string());
                     }
                 }
+                Task::none()
             }
             Message::Decimal => {
                 if self.waiting_for_operand {
@@ -112,6 +130,7 @@ impl Calculator {
                         self.display.push('.');
                     }
                 }
+                Task::none()
             }
             Message::Operation(op) => {
                 if let Ok(value) = self.display.parse::<f64>() {
@@ -144,6 +163,7 @@ impl Calculator {
                     self.operation = Some(op);
                     self.waiting_for_operand = true;
                 }
+                Task::none()
             }
             Message::Equals => {
                 if let (Ok(value), Some(first), Some(op)) = (
@@ -165,9 +185,11 @@ impl Calculator {
                     self.operation = None;
                     self.waiting_for_operand = true;
                 }
+                Task::none()
             }
             Message::ClearEntry => {
                 self.display = "0".to_string();
+                Task::none()
             }
             Message::Clear => {
                 self.display = "0".to_string();
@@ -175,6 +197,7 @@ impl Calculator {
                 self.first_operand = None;
                 self.operation = None;
                 self.waiting_for_operand = false;
+                Task::none()
             }
             Message::Backspace => {
                 if self.display.len() > 1 {
@@ -182,11 +205,13 @@ impl Calculator {
                 } else {
                     self.display = "0".to_string();
                 }
+                Task::none()
             }
             Message::PlusMinus => {
                 if let Ok(value) = self.display.parse::<f64>() {
                     self.display = format_number(-value);
                 }
+                Task::none()
             }
             Message::SquareRoot => {
                 if let Ok(value) = self.display.parse::<f64>() {
@@ -196,16 +221,19 @@ impl Calculator {
                         self.display = "Invalid input".to_string();
                     }
                 }
+                Task::none()
             }
             Message::Square => {
                 if let Ok(value) = self.display.parse::<f64>() {
                     self.display = format_number(value * value);
                 }
+                Task::none()
             }
             Message::Percentage => {
                 if let Ok(value) = self.display.parse::<f64>() {
                     self.display = format_number(value / 100.0);
                 }
+                Task::none()
             }
             Message::Reciprocal => {
                 if let Ok(value) = self.display.parse::<f64>() {
@@ -215,10 +243,41 @@ impl Calculator {
                         self.display = "Cannot divide by zero".to_string();
                     }
                 }
+                Task::none()
+            }
+            Message::ShowList => {
+                // TODO: Implement list functionality
+                Task::none()
+            }
+            Message::ToggleAlwaysOnTop => {
+                if let Some(window_id) = self.window_id {
+                    self.always_on_top = !self.always_on_top;
+                    return window::change_level(
+                        window_id,
+                        if self.always_on_top {
+                            window::Level::AlwaysOnTop
+                        } else {
+                            window::Level::Normal
+                        }
+                    );
+                }
+                Task::none()
+            }
+            Message::WindowEvent(event) => {
+                // Handle window events
+                match event {
+                    window::Event::CloseRequested => {
+                        // We don't have the window ID here, so we can't close it directly
+                        Task::none()
+                    }
+                    _ => Task::none()
+                }
+            }
+            Message::Ignore => {
+                // Do nothing
+                Task::none()
             }
         }
-        
-        Task::none()
     }
 
     fn calculate(&self, first: f64, second: f64, op: Operation) -> f64 {
@@ -238,16 +297,112 @@ impl Calculator {
     }
 
     fn view(&self) -> Element<'_, Message> {
+        // Create the mode display row with list and always on top buttons
+        let mode_row = container(
+            row![
+                // List button
+                button(
+                    container(svg(Handle::from_path("static/icons/list.svg"))
+                        .width(Length::Fixed(32.0)) // Icon size 28x28
+                        .height(Length::Fixed(32.0)) // Icon size 28x28
+                        .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
+                            svg::Style { color: Some(iced::Color::WHITE) }
+                        }))
+                        .width(Length::Fixed(32.0)) // Container size 28x28
+                        .height(Length::Fixed(32.0)) // Container size 28x28
+                        .center_x(Fill)
+                        .center_y(Fill)
+                )
+                .width(Length::Fixed(38.0)) // Button size 34x34
+                .height(Length::Fixed(38.0)) // Button size 34x34
+                .style(|_theme: &Theme, status: iced::widget::button::Status| {
+                    // Keep hover effect but remove default highlighting
+                    let background_color = match status {
+                        iced::widget::button::Status::Hovered => iced::Color::from_rgb8(50, 50, 50), // Hover color
+                        _ => iced::Color::from_rgb8(35, 35, 35), // Normal color (darker to remove highlighting)
+                    };
+                    
+                    iced::widget::button::Style {
+                        background: Some(iced::Background::Color(background_color)),
+                        text_color: iced::Color::WHITE,
+                        border: iced::border::Border {
+                            radius: 5.0.into(),
+                            ..Default::default()
+                        },
+                        shadow: Default::default(),
+                    }
+                })
+                .on_press(Message::ShowList),
+                
+                // Mode text
+                container(text("Базовый")
+                    .size(20) // Match calculator button font size
+                    .font(RUBIK_FONT)
+                    .style(|_theme: &Theme| {
+                        text::Style { color: Some(iced::Color::WHITE) }
+                    }))
+                .width(Length::Shrink)
+                .height(Length::Fixed(30.0))
+                .center_y(Fill),
+                
+                // Always on top toggle button
+                button(
+                    container(svg(Handle::from_path(
+                        if self.always_on_top {
+                            "static/icons/arrow-square-in.svg"
+                        } else {
+                            "static/icons/arrow-square-out.svg"
+                        }
+                    ))
+                        .width(Length::Fixed(32.0)) // Icon size 28x28
+                        .height(Length::Fixed(32.0)) // Icon size 28x28
+                        .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
+                            svg::Style { color: Some(iced::Color::WHITE) }
+                        }))
+                        .width(Length::Fixed(32.0)) // Container size 28x28
+                        .height(Length::Fixed(32.0)) // Container size 28x28
+                        .center_x(Fill)
+                        .center_y(Fill)
+                )
+                .width(Length::Fixed(38.0)) // Button size 34x34
+                .height(Length::Fixed(38.0)) // Button size 34x34
+                .style(|_theme: &Theme, status: iced::widget::button::Status| {
+                    // Keep hover effect but remove default highlighting
+                    let background_color = match status {
+                        iced::widget::button::Status::Hovered => iced::Color::from_rgb8(50, 50, 50), // Hover color
+                        _ => iced::Color::from_rgb8(35, 35, 35), // Normal color (darker to remove highlighting)
+                    };
+                    
+                    iced::widget::button::Style {
+                        background: Some(iced::Background::Color(background_color)),
+                        text_color: iced::Color::WHITE,
+                        border: iced::border::Border {
+                            radius: 5.0.into(),
+                            ..Default::default()
+                        },
+                        shadow: Default::default(),
+                    }
+                })
+                .on_press(Message::ToggleAlwaysOnTop),
+            ]
+            .spacing(2)
+            .align_y(Center)
+        )
+        .width(Fill)
+        .height(Length::Fixed(30.0))
+        .padding([0, 4]);
+
         // Create the history display (smaller font, top line) - 1/3 of total height
         let history_display = container(
             text(&self.history)
-                .size(16) // Smaller font size for history
-                .align_x(Center)
-                .align_y(Center) // Vertically center the text
+                .size(14) // Reduced font size from 16 to 14
+                .font(RUBIK_FONT) // Apply Rubik font
         )
         .width(Fill)
-        .height(Length::Fixed(31.2)) // 1/3 of 93.5px = 31.2px
-        .padding([7, 10]) // Proper padding for visibility
+        .height(Length::Fixed(28.0)) // Adjusted height for better vertical centering
+        .padding([0, 10]) // Removed vertical padding for better vertical centering
+        .align_x(iced::alignment::Horizontal::Right) // Right align the text
+        .align_y(iced::alignment::Vertical::Center) // Vertically center the text
         .style(|_theme: &Theme| container::Style {
             background: Some(iced::Background::Color(iced::Color::from_rgba8(26, 34, 39, 0.9))), // #1a2227 with 10% transparency (90% opacity)
             border: iced::border::Border {
@@ -260,13 +415,14 @@ impl Calculator {
         // Create the main display (larger font, bottom line) - 2/3 of total height
         let main_display = container(
             text(&self.display)
-                .size(16) // Larger font size for main display
-                .align_x(Center)
-                .align_y(Center) // Vertically center the text
+                .size(46) // Reverted to original font size for main display
+                .font(RUBIK_FONT) // Apply Rubik font
         )
         .width(Fill)
-        .height(Length::Fixed(62.3)) // 2/3 of 93.5px = 62.3px
-        .padding([7, 10]) // Proper padding for visibility
+        .height(Length::Fixed(60.0)) // Reverted to original height: 2/3 of 93.5px = 62.3px
+        .padding([0, 10]) // Kept vertical centering improvement (removed vertical padding)
+        .align_x(iced::alignment::Horizontal::Right) // Right align the text
+        .align_y(iced::alignment::Vertical::Center) // Vertically center the text
         .style(|_theme: &Theme| container::Style {
             background: Some(iced::Background::Color(iced::Color::from_rgba8(26, 34, 39, 0.9))), // #1a2227 with 10% transparency (90% opacity)
             border: iced::border::Border {
@@ -302,6 +458,7 @@ impl Calculator {
                 operator_button("radical.svg", Message::SquareRoot).padding(15).width(Fill),
                 operator_button("divide.svg", Message::Operation(Operation::Divide)).padding(15).width(Fill),
             ].spacing(2).align_y(Center),
+            
             
             // Row 3: Number buttons and operations
             row![
@@ -340,15 +497,13 @@ impl Calculator {
         .height(Fill);
 
         // Create the main layout with the specified proportions
-        // Button block takes 65% of total height
-        // Remaining 35% is divided into three equal parts:
-        // - Top space (11.67%)
-        // - Display field (11.67% - now set to 93.5px)
-        // - Bottom space (11.67%)
         let content = column![
-            container(iced::widget::vertical_space().height(Length::Fixed(93.5))).height(Length::Fixed(93.5)), // Top space same size as display field
+            container(iced::widget::vertical_space().height(Length::Fixed(15.0))).height(Length::Fixed(15.0)), // Increased top space to move mode row lower
+            mode_row, // Add the mode row here
+            container(iced::widget::vertical_space().height(Length::Fixed(15.0))).height(Length::Fixed(15.0)), // Increased space between mode row and display
+            container(iced::widget::vertical_space().height(Length::Fixed(6.0))).height(Length::Fixed(6.0)), // Additional space to move display lower
             display_container, // Two-line display with height of 93.5px
-            container(iced::widget::vertical_space().height(Length::Fixed(93.5))).height(Length::Fixed(93.5)), // Bottom space same size as display field
+            container(iced::widget::vertical_space().height(Length::Fixed(38.0))).height(Length::Fixed(38.0)), // Reduced from 40px to 20px bottom space
             container(buttons).height(Length::FillPortion(65)), // 65% for buttons
             iced::widget::vertical_space().height(Length::Fixed(4.0)), // 4px margin below button block
         ]
@@ -537,11 +692,21 @@ fn format_number(value: f64) -> String {
 
 fn main() -> iced::Result {
     iced::application(Calculator::title, Calculator::update, Calculator::view)
+        .subscription(|_state: &Calculator| {
+            iced::event::listen_with(|event, _status, _id| {
+                if let iced::Event::Window(window_event) = event {
+                    Some(Message::WindowEvent(window_event))
+                } else {
+                    Some(Message::Ignore)
+                }
+            })
+        })
         .window(iced::window::Settings {
             size: iced::Size::new(320.0, 470.0),
             min_size: Some(iced::Size::new(320.0, 470.0)),
             ..Default::default()
         })
+        .font(include_bytes!("../static/fonts/Rubik-Regular.ttf").as_slice())
         .theme(|_state: &Calculator| Theme::Dark)
         .run_with(Calculator::new)
 }
