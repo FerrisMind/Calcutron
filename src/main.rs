@@ -1,13 +1,16 @@
 use iced::widget::{
-    button, column, container, row, text,
+    button, column, container, row, text, svg,
 };
 use iced::{Center, Element, Fill, Length, Task, Theme};
+use iced::widget::svg::Handle;
 
 // Define calculator state
 #[derive(Default)]
 struct Calculator {
     // Current display value
     display: String,
+    // History display value (previous operations)
+    history: String,
     // First operand for binary operations
     first_operand: Option<f64>,
     // Current operation
@@ -58,6 +61,7 @@ impl Calculator {
     fn new() -> (Self, Task<Message>) {
         let mut calculator = Calculator::default();
         calculator.display = "0".to_string();
+        calculator.history = "".to_string();
         (calculator, Task::none())
     }
 
@@ -69,6 +73,16 @@ impl Calculator {
         match message {
             Message::Digit(digit) => {
                 if self.waiting_for_operand {
+                    // Move current display to history with operation
+                    if let Some(op) = self.operation {
+                        let op_symbol = match op {
+                            Operation::Add => "+",
+                            Operation::Subtract => "-",
+                            Operation::Multiply => "×",
+                            Operation::Divide => "÷",
+                        };
+                        self.history = format!("{} {} ", self.display, op_symbol);
+                    }
                     self.display = digit.to_string();
                     self.waiting_for_operand = false;
                 } else {
@@ -81,6 +95,16 @@ impl Calculator {
             }
             Message::Decimal => {
                 if self.waiting_for_operand {
+                    // Move current display to history with operation
+                    if let Some(op) = self.operation {
+                        let op_symbol = match op {
+                            Operation::Add => "+",
+                            Operation::Subtract => "-",
+                            Operation::Multiply => "×",
+                            Operation::Divide => "÷",
+                        };
+                        self.history = format!("{} {} ", self.display, op_symbol);
+                    }
                     self.display = "0.".to_string();
                     self.waiting_for_operand = false;
                 } else {
@@ -96,10 +120,26 @@ impl Calculator {
                             // Perform the previous operation
                             let result = self.calculate(first, value, current_op);
                             self.display = format_number(result);
+                            // Update history with the operation
+                            let op_symbol = match current_op {
+                                Operation::Add => "+",
+                                Operation::Subtract => "-",
+                                Operation::Multiply => "×",
+                                Operation::Divide => "÷",
+                            };
+                            self.history = format!("{} {} {} = ", first, op_symbol, value);
                             self.first_operand = Some(result);
                         }
                     } else {
                         self.first_operand = Some(value);
+                        // Update history with the operation
+                        let op_symbol = match op {
+                            Operation::Add => "+",
+                            Operation::Subtract => "-",
+                            Operation::Multiply => "×",
+                            Operation::Divide => "÷",
+                        };
+                        self.history = format!("{} {} ", value, op_symbol);
                     }
                     self.operation = Some(op);
                     self.waiting_for_operand = true;
@@ -112,6 +152,14 @@ impl Calculator {
                     self.operation,
                 ) {
                     let result = self.calculate(first, value, op);
+                    // Update history with the full expression
+                    let op_symbol = match op {
+                        Operation::Add => "+",
+                        Operation::Subtract => "-",
+                        Operation::Multiply => "×",
+                        Operation::Divide => "÷",
+                    };
+                    self.history = format!("{} {} {} = ", first, op_symbol, value);
                     self.display = format_number(result);
                     self.first_operand = None;
                     self.operation = None;
@@ -123,6 +171,7 @@ impl Calculator {
             }
             Message::Clear => {
                 self.display = "0".to_string();
+                self.history = "".to_string();
                 self.first_operand = None;
                 self.operation = None;
                 self.waiting_for_operand = false;
@@ -189,97 +238,283 @@ impl Calculator {
     }
 
     fn view(&self) -> Element<'_, Message> {
-        // Create the display
-        let display = container(
-            text(&self.display)
-                .size(32)
+        // Create the history display (smaller font, top line) - 1/3 of total height
+        let history_display = container(
+            text(&self.history)
+                .size(16) // Smaller font size for history
                 .align_x(Center)
+                .align_y(Center) // Vertically center the text
         )
         .width(Fill)
-        .height(Length::Fixed(60.0))
-        .padding(10)
+        .height(Length::Fixed(31.2)) // 1/3 of 93.5px = 31.2px
+        .padding([7, 10]) // Proper padding for visibility
         .style(|_theme: &Theme| container::Style {
-            background: Some(iced::Background::Color(iced::Color::from_rgb(0.1, 0.1, 0.1))),
+            background: Some(iced::Background::Color(iced::Color::from_rgba8(26, 34, 39, 0.9))), // #1a2227 with 10% transparency (90% opacity)
             border: iced::border::Border {
-                radius: 5.0.into(),
+                radius: 5.0.into(), // Simple rounded corners
                 ..Default::default()
             },
             ..container::Style::default()
         });
 
+        // Create the main display (larger font, bottom line) - 2/3 of total height
+        let main_display = container(
+            text(&self.display)
+                .size(16) // Larger font size for main display
+                .align_x(Center)
+                .align_y(Center) // Vertically center the text
+        )
+        .width(Fill)
+        .height(Length::Fixed(62.3)) // 2/3 of 93.5px = 62.3px
+        .padding([7, 10]) // Proper padding for visibility
+        .style(|_theme: &Theme| container::Style {
+            background: Some(iced::Background::Color(iced::Color::from_rgba8(26, 34, 39, 0.9))), // #1a2227 with 10% transparency (90% opacity)
+            border: iced::border::Border {
+                radius: 5.0.into(), // Simple rounded corners
+                ..Default::default()
+            },
+            ..container::Style::default()
+        });
+
+        // Combine both displays into a single display container with specified height
+        let display_container = column![
+            history_display,
+            main_display
+        ]
+        .spacing(2) // Spacing between the two lines
+        .height(Length::Fixed(93.5)) // Total height: 93.5px
+        .padding(0); // No padding on the container
+
         // Create the buttons with proper centering
         let buttons = column![
-            // Row 1: Percentage, Square Root, Clear buttons
+            // Row 1: Percentage, Clear Entry, Clear, Backspace
             row![
-                centered_button("%").on_press(Message::Percentage).padding(10).width(Fill),
-                centered_button("√").on_press(Message::SquareRoot).padding(10).width(Fill),
-                centered_button("x²").on_press(Message::Square).padding(10).width(Fill),
-                centered_button("1/x").on_press(Message::Reciprocal).padding(10).width(Fill),
+                operator_button("percent.svg", Message::Percentage).padding(15).width(Fill),
+                operator_button("broom.svg", Message::ClearEntry).padding(15).width(Fill),
+                operator_button("trash-simple.svg", Message::Clear).padding(15).width(Fill),
+                operator_button("backspace.svg", Message::Backspace).padding(15).width(Fill),
             ].spacing(2).align_y(Center),
             
-            // Row 2: Clear and operation buttons
+            // Row 2: Reciprocal, Square, Square Root, Division
             row![
-                centered_button("CE").on_press(Message::ClearEntry).padding(10).width(Fill),
-                centered_button("C").on_press(Message::Clear).padding(10).width(Fill),
-                centered_button("←").on_press(Message::Backspace).padding(10).width(Fill),
-                centered_button("/").on_press(Message::Operation(Operation::Divide)).padding(10).width(Fill),
+                operator_button("fragmentation.svg", Message::Reciprocal).padding(15).width(Fill),
+                operator_button("text-superscript.svg", Message::Square).padding(15).width(Fill),
+                operator_button("radical.svg", Message::SquareRoot).padding(15).width(Fill),
+                operator_button("divide.svg", Message::Operation(Operation::Divide)).padding(15).width(Fill),
             ].spacing(2).align_y(Center),
             
             // Row 3: Number buttons and operations
             row![
-                centered_button("7").on_press(Message::Digit(7)).padding(15).width(Fill),
-                centered_button("8").on_press(Message::Digit(8)).padding(15).width(Fill),
-                centered_button("9").on_press(Message::Digit(9)).padding(15).width(Fill),
-                centered_button("*").on_press(Message::Operation(Operation::Multiply)).padding(15).width(Fill),
+                digit_button("number-seven.svg", Message::Digit(7)).padding(15).width(Fill),
+                digit_button("number-eight.svg", Message::Digit(8)).padding(15).width(Fill),
+                digit_button("number-nine.svg", Message::Digit(9)).padding(15).width(Fill),
+                operator_button("x.svg", Message::Operation(Operation::Multiply)).padding(15).width(Fill),
             ].spacing(2).align_y(Center),
             
             // Row 4
             row![
-                centered_button("4").on_press(Message::Digit(4)).padding(15).width(Fill),
-                centered_button("5").on_press(Message::Digit(5)).padding(15).width(Fill),
-                centered_button("6").on_press(Message::Digit(6)).padding(15).width(Fill),
-                centered_button("-").on_press(Message::Operation(Operation::Subtract)).padding(15).width(Fill),
+                digit_button("number-four.svg", Message::Digit(4)).padding(15).width(Fill),
+                digit_button("number-five.svg", Message::Digit(5)).padding(15).width(Fill),
+                digit_button("number-six.svg", Message::Digit(6)).padding(15).width(Fill),
+                operator_button("minus.svg", Message::Operation(Operation::Subtract)).padding(15).width(Fill),
             ].spacing(2).align_y(Center),
             
             // Row 5
             row![
-                centered_button("1").on_press(Message::Digit(1)).padding(15).width(Fill),
-                centered_button("2").on_press(Message::Digit(2)).padding(15).width(Fill),
-                centered_button("3").on_press(Message::Digit(3)).padding(15).width(Fill),
-                centered_button("+").on_press(Message::Operation(Operation::Add)).padding(15).width(Fill),
+                digit_button("number-one.svg", Message::Digit(1)).padding(15).width(Fill),
+                digit_button("number-two.svg", Message::Digit(2)).padding(15).width(Fill),
+                digit_button("number-three.svg", Message::Digit(3)).padding(15).width(Fill),
+                operator_button("plus.svg", Message::Operation(Operation::Add)).padding(15).width(Fill),
             ].spacing(2).align_y(Center),
             
             // Row 6
             row![
-                centered_button("±").on_press(Message::PlusMinus).padding(15).width(Fill),
-                centered_button("0").on_press(Message::Digit(0)).padding(15).width(Fill),
-                centered_button(".").on_press(Message::Decimal).padding(15).width(Fill),
-                centered_button("=").on_press(Message::Equals).padding(15).width(Fill),
+                plus_minus_button("plus-minus.svg", Message::PlusMinus).padding(15).width(Fill),
+                digit_button("number-zero.svg", Message::Digit(0)).padding(15).width(Fill),
+                digit_button("dot.svg", Message::Decimal).padding(15).width(Fill),
+                equals_button("equals.svg", Message::Equals).padding(15).width(Fill),
             ].spacing(2).align_y(Center),
         ]
-        .spacing(2);
+        .spacing(2)
+        .align_x(Center)
+        .height(Fill);
 
-        // Create the main layout
+        // Create the main layout with the specified proportions
+        // Button block takes 65% of total height
+        // Remaining 35% is divided into three equal parts:
+        // - Top space (11.67%)
+        // - Display field (11.67% - now set to 93.5px)
+        // - Bottom space (11.67%)
         let content = column![
-            display,
-            buttons,
+            container(iced::widget::vertical_space().height(Length::Fixed(93.5))).height(Length::Fixed(93.5)), // Top space same size as display field
+            display_container, // Two-line display with height of 93.5px
+            container(iced::widget::vertical_space().height(Length::Fixed(93.5))).height(Length::Fixed(93.5)), // Bottom space same size as display field
+            container(buttons).height(Length::FillPortion(65)), // 65% for buttons
+            iced::widget::vertical_space().height(Length::Fixed(4.0)), // 4px margin below button block
         ]
-        .spacing(5)
-        .padding(10);
+        .padding([0, 4]) // Only horizontal padding
+        .height(Length::Fill); // Allow the entire content to fill available space
 
         container(content)
-            .width(Length::Fixed(300.0))
-            .height(Length::Fixed(400.0))
+            .width(Length::Fill) // Allow width to adapt to window size
+            .height(Length::Fill) // Allow height to adapt to window size
             .center_x(Fill)
             .center_y(Fill)
+            .style(|_theme: &Theme| container::Style {
+                // Remove the background entirely to allow window transparency to show through
+                background: None,
+                border: iced::border::Border {
+                    radius: 5.0.into(),
+                    ..Default::default()
+                },
+                ..container::Style::default()
+            })
             .into()
     }
 }
 
-// Helper function to create centered buttons
-fn centered_button(label: &str) -> button::Button<'_, Message> {
-    button(text(label).width(Fill).center())
+// Helper function to create digit buttons with custom styling
+fn digit_button(icon_path: &str, message: Message) -> button::Button<'_, Message> {
+    let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
+    button(
+        container(svg(icon_handle)
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0))
+            .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
+                // Use the same color as the display text (white in dark theme)
+                svg::Style { color: Some(iced::Color::WHITE) }
+            }))
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0))
+            .center_x(Fill)
+            .center_y(Fill)
+    )
         .width(Fill)
+        .height(Fill)
+        .style(|_theme: &Theme, status: iced::widget::button::Status| {
+            let background_color = match status {
+                iced::widget::button::Status::Hovered => iced::Color::from_rgb8(50, 50, 50), // #323232 (hover)
+                _ => iced::Color::from_rgb8(59, 59, 59), // #3b3b3b (normal)
+            };
+            
+            iced::widget::button::Style {
+                background: Some(iced::Background::Color(background_color)),
+                text_color: iced::Color::WHITE,
+                border: iced::border::Border {
+                    radius: 5.0.into(),
+                    ..Default::default()
+                },
+                shadow: Default::default(),
+            }
+        })
+        .on_press(message)
+}
+
+// Helper function to create operator buttons with custom styling (inverse of digit buttons)
+fn operator_button(icon_path: &str, message: Message) -> button::Button<'_, Message> {
+    let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
+    button(
+        container(svg(icon_handle)
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0))
+            .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
+                // Use the same color as the display text (white in dark theme)
+                svg::Style { color: Some(iced::Color::WHITE) }
+            }))
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0))
+            .center_x(Fill)
+            .center_y(Fill)
+    )
+        .width(Fill)
+        .height(Fill)
+        .style(|_theme: &Theme, status: iced::widget::button::Status| {
+            let background_color = match status {
+                iced::widget::button::Status::Hovered => iced::Color::from_rgb8(59, 59, 59), // #3b3b3b (hover)
+                _ => iced::Color::from_rgb8(50, 50, 50), // #323232 (normal)
+            };
+            
+            iced::widget::button::Style {
+                background: Some(iced::Background::Color(background_color)),
+                text_color: iced::Color::WHITE,
+                border: iced::border::Border {
+                    radius: 5.0.into(),
+                    ..Default::default()
+                },
+                shadow: Default::default(),
+            }
+        })
+        .on_press(message)
+}
+
+// Helper function to create the equals button with custom styling (keeping original icon color)
+fn equals_button(icon_path: &str, message: Message) -> button::Button<'_, Message> {
+    let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
+    button(
+        container(svg(icon_handle)
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0)))
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0))
+            .center_x(Fill)
+            .center_y(Fill)
+    )
+        .width(Fill)
+        .height(Fill)
+        .style(|_theme: &Theme, status: iced::widget::button::Status| {
+            let background_color = match status {
+                iced::widget::button::Status::Hovered => iced::Color::from_rgb8(71, 177, 232), // #47b1e8 (hover)
+                _ => iced::Color::from_rgb8(76, 194, 255), // #4cc2ff (normal)
+            };
+            
+            iced::widget::button::Style {
+                background: Some(iced::Background::Color(background_color)),
+                text_color: iced::Color::WHITE,
+                border: iced::border::Border {
+                    radius: 5.0.into(),
+                    ..Default::default()
+                },
+                shadow: Default::default(),
+            }
+        })
+        .on_press(message)
+}
+
+// Helper function to create the plusminus button with swapped colors
+fn plus_minus_button(icon_path: &str, message: Message) -> button::Button<'_, Message> {
+    let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
+    button(
+        container(svg(icon_handle)
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0))
+            .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
+                // Use the same color as the display text (white in dark theme)
+                svg::Style { color: Some(iced::Color::WHITE) }
+            }))
+            .width(Length::Fixed(20.0))
+            .height(Length::Fixed(20.0))
+            .center_x(Fill)
+            .center_y(Fill)
+    )
+        .width(Fill)
+        .height(Fill)
+        .style(|_theme: &Theme, status: iced::widget::button::Status| {
+            let background_color = match status {
+                iced::widget::button::Status::Hovered => iced::Color::from_rgb8(50, 50, 50), // #323232 (hover - was normal)
+                _ => iced::Color::from_rgb8(59, 59, 59), // #3b3b3b (normal - was hover)
+            };
+            
+            iced::widget::button::Style {
+                background: Some(iced::Background::Color(background_color)),
+                text_color: iced::Color::WHITE,
+                border: iced::border::Border {
+                    radius: 5.0.into(),
+                    ..Default::default()
+                },
+                shadow: Default::default(),
+            }
+        })
+        .on_press(message)
 }
 
 // Helper function to format numbers for display
@@ -302,6 +537,11 @@ fn format_number(value: f64) -> String {
 
 fn main() -> iced::Result {
     iced::application(Calculator::title, Calculator::update, Calculator::view)
+        .window(iced::window::Settings {
+            size: iced::Size::new(320.0, 470.0),
+            min_size: Some(iced::Size::new(320.0, 470.0)),
+            ..Default::default()
+        })
         .theme(|_state: &Calculator| Theme::Dark)
         .run_with(Calculator::new)
 }
