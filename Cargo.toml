@@ -11,3 +11,15 @@ categories = ["gui"]
 
 [dependencies]
 iced = { version = "0.13.1", features = ["svg"] }
+
+[package.metadata.deb]
+maintainer = "Calcutron Contributors <contributors@calcutron.org>"
+copyright = "2025, Calcutron Contributors"
+license-file = ["LICENSE", "4"]
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/calcutron", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/calcutron/README", "644"],
+]
