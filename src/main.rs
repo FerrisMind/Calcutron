@@ -79,6 +79,8 @@ impl Calcutron {
         calculator.display = "0".to_string();
         calculator.history = "".to_string();
         calculator.always_on_top = false;
+        // Initialize window_id - this will be set when the window is created
+        calculator.window_id = Some(window::Id::unique());
         (calculator, Task::none())
     }
 
@@ -137,8 +139,18 @@ impl Calcutron {
                     if let Some(first) = self.first_operand {
                         if let Some(current_op) = self.operation {
                             // Perform the previous operation
-                            let result = self.calculate(first, value, current_op);
-                            self.display = format_number(result);
+                            match self.calculate(first, value, current_op) {
+                                Ok(result) => {
+                                    self.display = format_number(result);
+                                }
+                                Err(error) => {
+                                    self.display = error;
+                                    self.first_operand = None;
+                                    self.operation = None;
+                                    self.waiting_for_operand = true;
+                                    return Task::none();
+                                }
+                            }
                             // Update history with the operation
                             let op_symbol = match current_op {
                                 Operation::Add => "+",
@@ -171,19 +183,28 @@ impl Calcutron {
                     self.first_operand,
                     self.operation,
                 ) {
-                    let result = self.calculate(first, value, op);
-                    // Update history with the full expression
-                    let op_symbol = match op {
-                        Operation::Add => "+",
-                        Operation::Subtract => "-",
-                        Operation::Multiply => "×",
-                        Operation::Divide => "÷",
-                    };
-                    self.history = format!("{} {} {} = ", first, op_symbol, value);
-                    self.display = format_number(result);
-                    self.first_operand = None;
-                    self.operation = None;
-                    self.waiting_for_operand = true;
+                    match self.calculate(first, value, op) {
+                        Ok(result) => {
+                            // Update history with the full expression
+                            let op_symbol = match op {
+                                Operation::Add => "+",
+                                Operation::Subtract => "-",
+                                Operation::Multiply => "×",
+                                Operation::Divide => "÷",
+                            };
+                            self.history = format!("{} {} {} = ", first, op_symbol, value);
+                            self.display = format_number(result);
+                            self.first_operand = None;
+                            self.operation = None;
+                            self.waiting_for_operand = true;
+                        }
+                        Err(error) => {
+                            self.display = error;
+                            self.first_operand = None;
+                            self.operation = None;
+                            self.waiting_for_operand = true;
+                        }
+                    }
                 }
                 Task::none()
             }
@@ -280,17 +301,17 @@ impl Calcutron {
         }
     }
 
-    fn calculate(&self, first: f64, second: f64, op: Operation) -> f64 {
+    fn calculate(&self, first: f64, second: f64, op: Operation) -> Result<f64, String> {
         match op {
-            Operation::Add => first + second,
-            Operation::Subtract => first - second,
-            Operation::Multiply => first * second,
+            Operation::Add => Ok(first + second),
+            Operation::Subtract => Ok(first - second),
+            Operation::Multiply => Ok(first * second),
             Operation::Divide => {
                 if second != 0.0 {
-                    first / second
+                    Ok(first / second)
                 } else {
-                    // Handle division by zero
-                    f64::NAN
+                    // Handle division by zero consistently
+                    Err("Cannot divide by zero".to_string())
                 }
             }
         }
@@ -681,11 +702,21 @@ fn format_number(value: f64) -> String {
     } else {
         // Format to avoid unnecessary decimal places
         if value.fract() == 0.0 && value.abs() < 1e15 {
-            format!("{}", value as i64)
+            // Use integer formatting for whole numbers
+            (value as i64).to_string()
         } else if value.abs() >= 1e15 || (value.abs() < 1e-4 && value != 0.0) {
+            // Use scientific notation for very large or very small numbers
             format!("{:.6e}", value)
         } else {
-            format!("{:.10}", value).trim_end_matches('0').trim_end_matches('.').to_string()
+            // Use a more efficient approach for regular decimal numbers
+            let formatted = format!("{:.10}", value);
+            // Trim trailing zeros and decimal point more efficiently
+            let trimmed = formatted.trim_end_matches('0');
+            if trimmed.ends_with('.') {
+                &trimmed[..trimmed.len() - 1]
+            } else {
+                trimmed
+            }.to_string()
         }
     }
 }
