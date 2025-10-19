@@ -3,50 +3,51 @@
 ## ✅ Completed Packages
 
 ### Windows Installer (EXE)
-- **Status**: Successfully created using WiX Bootstrapper
-- **Location**: [calcutron-installer.exe](file:///d:/GitHub/Calcutron/cutron-installer.exe)
-- **Size**: ~4.3 MB
+- **Status**: Successfully created
+- **Location**: 
+  - [calcutron_0.1.0_x64-setup.exe](file:///d:/GitHub/Calcutron/target/release/calcutron_0.1.0_x64-setup.exe) - NSIS-based installer
+  - [calcutron-installer.exe](file:///d:/GitHub/Calcutron/calcutron-installer.exe) - WiX-based installer
+- **Size**: ~4.2 MB (NSIS), ~4.4 MB (WiX)
 - **Installation**: Double-click the EXE file to install Calcutron on Windows
-- **Features**: 
-  - Professional installer with license agreement
-  - Automatic installation of the MSI package
-  - Standard Windows installer experience
+
+### Windows Installer (MSI)
+- **Status**: Successfully created
+- **Location**: 
+  - [calcutron_0.1.0_x64_en-US.msi](file:///d:/GitHub/Calcutron/target/release/calcutron_0.1.0_x64_en-US.msi) - cargo-packager generated
+  - [calcutron-installer.msi](file:///d:/GitHub/Calcutron/target/release/calcutron-installer.msi) - manually created
+- **Size**: ~4.2 MB
+- **Installation**: Double-click the MSI file to install Calcutron on Windows
 
 ## ⚠️ Packages Requiring Linux Environment
 
 ### Debian Package (.deb)
 - **Status**: Configuration prepared, requires Linux environment to build
-- **Prepared**: Configuration in [Cargo.toml](file:///d:/GitHub/Calcutron/Cargo.toml) under `[package.metadata.deb]`
-- **Instructions**: See [packaging_instructions.md](file:///d:/GitHub/Calcutron/packaging_instructions.md) for detailed steps
+- **Prepared**: Configuration in [Packager.toml](file:///d:/GitHub/Calcutron/Packager.toml)
+- **Instructions**: Run `cargo packager --release --formats deb` on a Linux system
 
 ### RPM Package (.rpm)
-- **Status**: Requires Linux environment with RPM tools to build
-- **Instructions**: See [packaging_instructions.md](file:///d:/GitHub/Calcutron/packaging_instructions.md) for detailed steps
+- **Status**: Configuration prepared, requires Linux environment to build
+- **Prepared**: Configuration in [Packager.toml](file:///d:/GitHub/Calcutron/Packager.toml)
+- **Instructions**: Run `cargo packager --release --formats rpm` on a Linux system with RPM tools
 
 ## 📁 Files Created
 
-1. [calcutron-installer.exe](file:///d:/GitHub/Calcutron/cutron-installer.exe) - Windows EXE installer (WiX Bootstrapper)
-2. [Cargo.toml](file:///d:/GitHub/Calcutron/Cargo.toml) - Updated with Debian packaging metadata
-3. [wix/bundle.wxs](file:///d:/GitHub/Calcutron/wix/bundle.wxs) - WiX bundle configuration for EXE installer
+1. [target/release/calcutron_0.1.0_x64-setup.exe](file:///d:/GitHub/Calcutron/target/release/calcutron_0.1.0_x64-setup.exe) - NSIS-based Windows EXE installer
+2. [target/release/calcutron_0.1.0_x64_en-US.msi](file:///d:/GitHub/Calcutron/target/release/calcutron_0.1.0_x64_en-US.msi) - WiX-based Windows MSI installer
+3. [Packager.toml](file:///d:/GitHub/Calcutron/Packager.toml) - Configuration for cargo-packager
 4. [wix/main.wxs](file:///d:/GitHub/Calcutron/wix/main.wxs) - Updated WiX configuration
-5. [packaging_instructions.md](file:///d:/GitHub/Calcutron/packaging_instructions.md) - Detailed instructions for all platforms
-6. [build_all_packages.bat](file:///d:/GitHub/Calcutron/build_all_packages.bat) - Windows batch script for building packages
-7. [PACKAGING_SUMMARY.md](file:///d:/GitHub/Calcutron/PACKAGING_SUMMARY.md) - This summary file
+5. [build_all_packages.bat](file:///d:/GitHub/Calcutron/build_all_packages.bat) - Windows batch script for building packages
+6. [PACKAGING_SUMMARY.md](file:///d:/GitHub/Calcutron/PACKAGING_SUMMARY.md) - This summary file
 
 ## 🚀 Next Steps
 
 To create the Debian and RPM packages:
 
 1. Use a Linux environment (physical or virtual machine)
-2. Install the required tools:
+2. Run the following command:
    ```bash
-   # For Debian packages
-   cargo install cargo-deb
-   
-   # For RPM packages
-   cargo install cargo-rpm
+   cargo packager --release --formats deb,rpm
    ```
-3. Follow the instructions in [packaging_instructions.md](file:///d:/GitHub/Calcutron/packaging_instructions.md)
 
 ## 🔄 Alternative Approach
 

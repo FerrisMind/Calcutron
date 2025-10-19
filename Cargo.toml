@@ -2,24 +2,22 @@
 name = "calcutron"
 version = "0.1.0"
 edition = "2024"
-authors = ["Calcutron Contributors"]
+authors = ["FerrisMind"]
 description = "Calculator implemented in Rust with Iced GUI like Microsoft Calculator UI"
 repository = "https://github.com/yourusername/calcutron"
 license = "MIT"
 keywords = ["calcutron", "rpn", "gui", "iced"]
 categories = ["gui"]
 
+[lib]
+name = "calcutron"
+path = "src/lib.rs"
+
+[[bin]]
+name = "calcutron"
+path = "src/main.rs"
+
 [dependencies]
 iced = { version = "0.13.1", features = ["svg"] }
 
-[package.metadata.deb]
-maintainer = "Calcutron Contributors <contributors@calcutron.org>"
-copyright = "2025, Calcutron Contributors"
-license-file = ["LICENSE", "4"]
-depends = "$auto"
-section = "utility"
-priority = "optional"
-assets = [
-    ["target/release/calcutron", "usr/bin/", "755"],
-    ["README.md", "usr/share/doc/calcutron/README", "644"],
-]
+[package.metadata.packager]

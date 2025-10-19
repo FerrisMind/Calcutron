@@ -1,0 +1,15 @@
+---
+description: Основные правила для Rust кода калькулятора
+globs: src/**/*.rs,main.rs
+alwaysApply: false
+---
+
+- Следуй архитектуре Elm (Model-View-Update) для iced приложения
+- Главный файл @src/main.rs содержит всю логику в одном файле
+- Структуры: CalculatorApp, Message enum, операции RPN
+- Обязательные импорты: `use iced::{Application, Settings, Element, Command}`
+- RPN стек реализован через Vec<f64> для чисел с плавающей точкой
+- Операции калькулятора: +, -, *, /, Push, Clear, AllClear
+- Обработка ошибок через Result для деления на ноль и переполнения стека
+- Константы и максимальные значения стека определяй локально
+- Используй edition = "2024" как указано в @Cargo.toml

@@ -1,0 +1,22 @@
+[app]
+name = "Calcutron"
+identifier = "com.ferrismind.calcutron"
+icon = ["icons/32x32.png", "icons/128x128.png", "icons/256x256.png"]
+version = "0.1.0"
+authors = ["FerrisMind"]
+description = "Calculator implemented in Rust with Iced GUI like Microsoft Calculator UI"
+
+[[bin]]
+name = "calcutron"
+path = "target/release/calcutron.exe"
+
+[windows]
+# WiX configuration for MSI installer
+wix = { license = "LICENSE", enable_elevated_ui = true }
+
+# NSIS configuration for EXE installer
+nsis = { install_mode = "perMachine", license = "LICENSE" }
+
+[linux]
+deb = { depends = ["libc6"] }
+rpm = { depends = ["glibc"] }

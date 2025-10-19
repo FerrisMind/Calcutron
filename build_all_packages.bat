@@ -3,25 +3,39 @@ echo Building Calcutron for all platforms
 echo ==================================
 
 echo.
-echo 1. Building Windows installer ^(EXE^)
-echo -------------------------------
-echo Building MSI installer first...
-cargo wix
-
-echo Building EXE installer using WiX Bootstrapper...
-"C:\Program Files (x86)\WiX Toolset v3.14\bin\candle.exe" "wix/bundle.wxs" -ext WixBalExtension
-"C:\Program Files (x86)\WiX Toolset v3.14\bin\light.exe" "bundle.wixobj" -ext WixBalExtension -o "calcutron-installer.exe"
-
-if exist calcutron-installer.exe (
-    echo Windows EXE installer created successfully: calcutron-installer.exe
+echo 1. Building Windows installers using cargo-packager
+echo --------------------------------------------
+echo Creating EXE and MSI installers...
+cargo packager --release
+if %ERRORLEVEL% EQU 0 (
+    echo Windows installers created successfully
 ) else (
-    echo Failed to create Windows EXE installer
+    echo Failed to create Windows installers using cargo-packager
+    goto :manual_build
 )
 
 echo.
 echo 2. To build Debian ^(.deb^) and RPM ^(.rpm^) packages, you need to use a Linux environment.
-echo    See packaging_instructions.md for detailed instructions.
+echo    See PACKAGING_SUMMARY.md for detailed instructions.
 echo.
 
 echo Build process completed.
+goto :end
+
+:manual_build
+echo.
+echo Attempting manual build with WiX Toolset...
+echo --------------------------------------------
+mkdir installer_files 2>nul
+copy "target\release\calcutron.exe" "installer_files\" >nul
+copy "README.md" "installer_files\" >nul
+copy "LICENSE" "installer_files\" >nul
+7z a -sfx installer.exe installer_files\
+if exist installer.exe (
+    echo Windows EXE installer created successfully: installer.exe
+) else (
+    echo Failed to create Windows EXE installer
+)
+
+:end
 pause
