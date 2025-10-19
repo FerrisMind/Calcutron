@@ -13,7 +13,7 @@ pub fn create_button_grid(adaptive_size: AdaptiveSize) -> Element<'static, Messa
             operator_button("trash-simple.svg", Message::Clear, adaptive_size).width(Fill),
             operator_button("backspace.svg", Message::Backspace, adaptive_size).width(Fill),
         ]
-        .spacing(1)
+        .spacing(2)
         .align_y(Center)
         .height(Fill),
         // Row 2: Reciprocal, Square, Square Root, Division
