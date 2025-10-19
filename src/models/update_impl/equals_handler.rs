@@ -1,7 +1,7 @@
 use iced::Task;
 
+use crate::helpers::{calculation::calculate, formatting::format_number};
 use crate::models::{calcutron::Calcutron, message::Message, operation::Operation};
-use crate::helpers::{formatting::format_number, calculation::calculate};
 
 pub fn handle_equals(calcutron: &mut Calcutron) -> Task<Message> {
     if let (Ok(value), Some(first), Some(op)) = (

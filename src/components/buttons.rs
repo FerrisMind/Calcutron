@@ -1,25 +1,39 @@
+use iced::widget::svg::Handle;
 use iced::widget::{button, container, svg};
 use iced::{Length, Theme};
-use iced::widget::svg::Handle;
 
-use crate::models::message::Message;
+use crate::models::{calcutron::AdaptiveSize, message::Message};
+
+// Helper function to get fixed icon size
+fn get_icon_size(_adaptive_size: AdaptiveSize) -> f32 {
+    16.0 // Fixed size 20px
+}
 
 // Helper function to create digit buttons with custom styling
-pub fn digit_button(icon_path: &str, message: Message) -> button::Button<'_, Message> {
+pub fn digit_button(
+    icon_path: &str,
+    message: Message,
+    adaptive_size: crate::models::calcutron::AdaptiveSize,
+) -> iced::widget::Container<'_, Message, iced::Theme> {
     let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
-    button(
-        container(svg(icon_handle)
-            .width(Length::Fixed(22.0))
-            .height(Length::Fixed(22.0))
-            .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
-                // Use the same color as the display text (white in dark theme)
-                svg::Style { color: Some(iced::Color::WHITE) }
-            }))
-            .width(Length::Fixed(22.0))
-            .height(Length::Fixed(22.0))
+    container(
+        button(
+            container(
+                svg(icon_handle)
+                    .width(Length::Fixed(get_icon_size(adaptive_size)))
+                    .height(Length::Fixed(get_icon_size(adaptive_size)))
+                    .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
+                        // Use the same color as the display text (white in dark theme)
+                        svg::Style {
+                            color: Some(iced::Color::WHITE),
+                        }
+                    }),
+            )
+            .width(iced::Fill)
+            .height(iced::Fill)
             .center_x(iced::Fill)
-            .center_y(iced::Fill)
-    )
+            .center_y(iced::Fill),
+        )
         .width(iced::Fill)
         .height(iced::Fill)
         .style(|_theme: &Theme, status: iced::widget::button::Status| {
@@ -27,7 +41,7 @@ pub fn digit_button(icon_path: &str, message: Message) -> button::Button<'_, Mes
                 iced::widget::button::Status::Hovered => iced::Color::from_rgb8(50, 50, 50), // #323232 (hover)
                 _ => iced::Color::from_rgb8(59, 59, 59), // #3b3b3b (normal)
             };
-            
+
             iced::widget::button::Style {
                 background: Some(iced::Background::Color(background_color)),
                 text_color: iced::Color::WHITE,
@@ -38,25 +52,37 @@ pub fn digit_button(icon_path: &str, message: Message) -> button::Button<'_, Mes
                 shadow: Default::default(),
             }
         })
-        .on_press(message)
+        .on_press(message),
+    )
+    .width(iced::Fill)
+    .height(iced::Fill)
 }
 
 // Helper function to create operator buttons with custom styling (inverse of digit buttons)
-pub fn operator_button(icon_path: &str, message: Message) -> button::Button<'_, Message> {
+pub fn operator_button(
+    icon_path: &str,
+    message: Message,
+    adaptive_size: crate::models::calcutron::AdaptiveSize,
+) -> iced::widget::Container<'_, Message, iced::Theme> {
     let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
-    button(
-        container(svg(icon_handle)
-            .width(Length::Fixed(22.0))
-            .height(Length::Fixed(22.0))
-            .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
-                // Use the same color as the display text (white in dark theme)
-                svg::Style { color: Some(iced::Color::WHITE) }
-            }))
-            .width(Length::Fixed(22.0))
-            .height(Length::Fixed(22.0))
+    container(
+        button(
+            container(
+                svg(icon_handle)
+                    .width(Length::Fixed(get_icon_size(adaptive_size)))
+                    .height(Length::Fixed(get_icon_size(adaptive_size)))
+                    .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
+                        // Use the same color as the display text (white in dark theme)
+                        svg::Style {
+                            color: Some(iced::Color::WHITE),
+                        }
+                    }),
+            )
+            .width(iced::Fill)
+            .height(iced::Fill)
             .center_x(iced::Fill)
-            .center_y(iced::Fill)
-    )
+            .center_y(iced::Fill),
+        )
         .width(iced::Fill)
         .height(iced::Fill)
         .style(|_theme: &Theme, status: iced::widget::button::Status| {
@@ -64,7 +90,7 @@ pub fn operator_button(icon_path: &str, message: Message) -> button::Button<'_, 
                 iced::widget::button::Status::Hovered => iced::Color::from_rgb8(59, 59, 59), // #3b3b3b (hover)
                 _ => iced::Color::from_rgb8(50, 50, 50), // #323232 (normal)
             };
-            
+
             iced::widget::button::Style {
                 background: Some(iced::Background::Color(background_color)),
                 text_color: iced::Color::WHITE,
@@ -75,21 +101,31 @@ pub fn operator_button(icon_path: &str, message: Message) -> button::Button<'_, 
                 shadow: Default::default(),
             }
         })
-        .on_press(message)
+        .on_press(message),
+    )
+    .width(iced::Fill)
+    .height(iced::Fill)
 }
 
 // Helper function to create the equals button with custom styling (keeping original icon color)
-pub fn equals_button(icon_path: &str, message: Message) -> button::Button<'_, Message> {
+pub fn equals_button(
+    icon_path: &str,
+    message: Message,
+    adaptive_size: crate::models::calcutron::AdaptiveSize,
+) -> iced::widget::Container<'_, Message, iced::Theme> {
     let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
-    button(
-        container(svg(icon_handle)
-            .width(Length::Fixed(22.0))
-            .height(Length::Fixed(22.0)))
-            .width(Length::Fixed(22.0))
-            .height(Length::Fixed(22.0))
+    container(
+        button(
+            container(
+                svg(icon_handle)
+                    .width(Length::Fixed(get_icon_size(adaptive_size)))
+                    .height(Length::Fixed(get_icon_size(adaptive_size))),
+            )
+            .width(iced::Fill)
+            .height(iced::Fill)
             .center_x(iced::Fill)
-            .center_y(iced::Fill)
-    )
+            .center_y(iced::Fill),
+        )
         .width(iced::Fill)
         .height(iced::Fill)
         .style(|_theme: &Theme, status: iced::widget::button::Status| {
@@ -97,7 +133,7 @@ pub fn equals_button(icon_path: &str, message: Message) -> button::Button<'_, Me
                 iced::widget::button::Status::Hovered => iced::Color::from_rgb8(71, 177, 232), // #47b1e8 (hover)
                 _ => iced::Color::from_rgb8(76, 194, 255), // #4cc2ff (normal)
             };
-            
+
             iced::widget::button::Style {
                 background: Some(iced::Background::Color(background_color)),
                 text_color: iced::Color::WHITE,
@@ -108,25 +144,37 @@ pub fn equals_button(icon_path: &str, message: Message) -> button::Button<'_, Me
                 shadow: Default::default(),
             }
         })
-        .on_press(message)
+        .on_press(message),
+    )
+    .width(iced::Fill)
+    .height(iced::Fill)
 }
 
 // Helper function to create the plusminus button with swapped colors
-pub fn plus_minus_button(icon_path: &str, message: Message) -> button::Button<'_, Message> {
+pub fn plus_minus_button(
+    icon_path: &str,
+    message: Message,
+    adaptive_size: crate::models::calcutron::AdaptiveSize,
+) -> iced::widget::Container<'_, Message, iced::Theme> {
     let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
-    button(
-        container(svg(icon_handle)
-            .width(Length::Fixed(22.0))
-            .height(Length::Fixed(22.0))
-            .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
-                // Use the same color as the display text (white in dark theme)
-                svg::Style { color: Some(iced::Color::WHITE) }
-            }))
-            .width(Length::Fixed(22.0))
-            .height(Length::Fixed(22.0))
+    container(
+        button(
+            container(
+                svg(icon_handle)
+                    .width(Length::Fixed(get_icon_size(adaptive_size)))
+                    .height(Length::Fixed(get_icon_size(adaptive_size)))
+                    .style(|_theme: &Theme, _status: iced::widget::svg::Status| {
+                        // Use the same color as the display text (white in dark theme)
+                        svg::Style {
+                            color: Some(iced::Color::WHITE),
+                        }
+                    }),
+            )
+            .width(iced::Fill)
+            .height(iced::Fill)
             .center_x(iced::Fill)
-            .center_y(iced::Fill)
-    )
+            .center_y(iced::Fill),
+        )
         .width(iced::Fill)
         .height(iced::Fill)
         .style(|_theme: &Theme, status: iced::widget::button::Status| {
@@ -134,7 +182,7 @@ pub fn plus_minus_button(icon_path: &str, message: Message) -> button::Button<'_
                 iced::widget::button::Status::Hovered => iced::Color::from_rgb8(50, 50, 50), // #323232 (hover - was normal)
                 _ => iced::Color::from_rgb8(59, 59, 59), // #3b3b3b (normal - was hover)
             };
-            
+
             iced::widget::button::Style {
                 background: Some(iced::Background::Color(background_color)),
                 text_color: iced::Color::WHITE,
@@ -145,5 +193,8 @@ pub fn plus_minus_button(icon_path: &str, message: Message) -> button::Button<'_
                 shadow: Default::default(),
             }
         })
-        .on_press(message)
+        .on_press(message),
+    )
+    .width(iced::Fill)
+    .height(iced::Fill)
 }

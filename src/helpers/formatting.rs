@@ -11,7 +11,10 @@ pub fn format_number(value: f64) -> String {
         } else if value.abs() >= 1e15 || (value.abs() < 1e-4 && value != 0.0) {
             format!("{:.6e}", value)
         } else {
-            format!("{:.10}", value).trim_end_matches('0').trim_end_matches('.').to_string()
+            format!("{:.10}", value)
+                .trim_end_matches('0')
+                .trim_end_matches('.')
+                .to_string()
         }
     }
 }

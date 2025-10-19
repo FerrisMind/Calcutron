@@ -1,7 +1,7 @@
 use iced::Task;
 
-use crate::models::{calcutron::Calcutron, message::Message};
 use crate::helpers::formatting::format_number;
+use crate::models::{calcutron::Calcutron, message::Message};
 
 pub fn handle_plus_minus(calcutron: &mut Calcutron) -> Task<Message> {
     if let Ok(value) = calcutron.display.parse::<f64>() {

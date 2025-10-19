@@ -1,2 +1,2 @@
-pub mod formatting;
 pub mod calculation;
+pub mod formatting;

@@ -11,19 +11,23 @@ pub fn handle_toggle_always_on_top(calcutron: &mut Calcutron) -> Task<Message> {
                 iced::window::Level::AlwaysOnTop
             } else {
                 iced::window::Level::Normal
-            }
+            },
         );
     }
     Task::none()
 }
 
-pub fn handle_window_event(_calcutron: &mut Calcutron, event: iced::window::Event) -> Task<Message> {
+pub fn handle_window_event(calcutron: &mut Calcutron, event: iced::window::Event) -> Task<Message> {
     // Handle window events
     match event {
         iced::window::Event::CloseRequested => {
             // We don't have the window ID here, so we can't close it directly
             Task::none()
         }
-        _ => Task::none()
+        iced::window::Event::Resized(size) => {
+            calcutron.window_size = size;
+            Task::none()
+        }
+        _ => Task::none(),
     }
 }
