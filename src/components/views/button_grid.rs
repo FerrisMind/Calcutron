@@ -8,27 +8,30 @@ pub fn create_button_grid(adaptive_size: AdaptiveSize) -> Element<'static, Messa
     column![
         // Row 1: Percentage, Clear Entry, Clear, Backspace
         row![
-            operator_button("percent.svg", Message::Percentage, adaptive_size).width(Fill),
-            operator_button("broom.svg", Message::ClearEntry, adaptive_size).width(Fill),
-            operator_button("trash-simple.svg", Message::Clear, adaptive_size).width(Fill),
-            operator_button("backspace.svg", Message::Backspace, adaptive_size).width(Fill),
+            operator_button("percent.svg", Message::Percentage, adaptive_size, 1.0).width(Fill),
+            operator_button("broom.svg", Message::ClearEntry, adaptive_size, 1.0).width(Fill),
+            operator_button("trash-simple.svg", Message::Clear, adaptive_size, 1.0).width(Fill),
+            operator_button("backspace.svg", Message::Backspace, adaptive_size, 1.0).width(Fill),
         ]
-        .spacing(1)
+        .spacing(0)
         .align_y(Center)
         .height(Fill),
         // Row 2: Reciprocal, Square, Square Root, Division
         row![
-            operator_button("fragmentation.svg", Message::Reciprocal, adaptive_size).width(Fill),
-            operator_button("text-superscript.svg", Message::Square, adaptive_size).width(Fill),
-            operator_button("radical.svg", Message::SquareRoot, adaptive_size).width(Fill),
+            operator_button("fragmentation.svg", Message::Reciprocal, adaptive_size, 1.0)
+                .width(Fill),
+            operator_button("text-superscript.svg", Message::Square, adaptive_size, 1.0)
+                .width(Fill),
+            operator_button("radical.svg", Message::SquareRoot, adaptive_size, 1.0).width(Fill),
             operator_button(
                 "divide.svg",
                 Message::Operation(Operation::Divide),
-                adaptive_size
+                adaptive_size,
+                1.0
             )
             .width(Fill),
         ]
-        .spacing(1)
+        .spacing(0)
         .align_y(Center)
         .height(Fill),
         // Row 3: Number buttons and operations
@@ -39,11 +42,12 @@ pub fn create_button_grid(adaptive_size: AdaptiveSize) -> Element<'static, Messa
             operator_button(
                 "x.svg",
                 Message::Operation(Operation::Multiply),
-                adaptive_size
+                adaptive_size,
+                1.5
             )
             .width(Fill),
         ]
-        .spacing(1)
+        .spacing(0)
         .align_y(Center),
         // Row 4
         row![
@@ -53,11 +57,12 @@ pub fn create_button_grid(adaptive_size: AdaptiveSize) -> Element<'static, Messa
             operator_button(
                 "minus.svg",
                 Message::Operation(Operation::Subtract),
-                adaptive_size
+                adaptive_size,
+                1.5
             )
             .width(Fill),
         ]
-        .spacing(1)
+        .spacing(0)
         .align_y(Center),
         // Row 5
         row![
@@ -67,20 +72,21 @@ pub fn create_button_grid(adaptive_size: AdaptiveSize) -> Element<'static, Messa
             operator_button(
                 "plus.svg",
                 Message::Operation(Operation::Add),
-                adaptive_size
+                adaptive_size,
+                1.5
             )
             .width(Fill),
         ]
-        .spacing(1)
+        .spacing(0)
         .align_y(Center),
         // Row 6
         row![
-            plus_minus_button("plus-minus.svg", Message::PlusMinus, adaptive_size).width(Fill),
+            plus_minus_button("plus-minus.svg", Message::PlusMinus, adaptive_size, 1.0).width(Fill),
             digit_button("number-zero.svg", Message::Digit(0), adaptive_size).width(Fill),
             digit_button("dot.svg", Message::Decimal, adaptive_size).width(Fill),
-            equals_button("equals.svg", Message::Equals, adaptive_size).width(Fill),
+            equals_button("equals.svg", Message::Equals, adaptive_size, 1.5).width(Fill),
         ]
-        .spacing(1)
+        .spacing(0)
         .align_y(Center),
     ]
     .spacing(1)

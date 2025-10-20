@@ -8,21 +8,21 @@ pub fn create_list_button() -> Element<'static, Message, Theme> {
     button(
         container(
             svg(Handle::from_path("static/icons/list.svg"))
-                .width(Length::Fixed(32.0)) // Icon size 28x28
-                .height(Length::Fixed(32.0)) // Icon size 28x28
+                .width(Length::Fixed(40.0)) // Icon size 40x40 - increased
+                .height(Length::Fixed(40.0)) // Icon size 40x40 - increased
                 .style(
                     |_theme: &Theme, _status: iced::widget::svg::Status| svg::Style {
                         color: Some(iced::Color::WHITE),
                     },
                 ),
         )
-        .width(Length::Fixed(32.0)) // Container size 28x28
-        .height(Length::Fixed(32.0)) // Container size 28x28
+        .width(Length::Fixed(40.0)) // Container size 40x40 - increased
+        .height(Length::Fixed(40.0)) // Container size 40x40 - increased
         .center_x(Fill)
         .center_y(Fill),
     )
-    .width(Length::Fixed(38.0)) // Button size 34x34
-    .height(Length::Fixed(38.0)) // Button size 34x34
+    .width(Length::Fixed(42.0)) // Button size 42x42 - proper frame for 40x40 icon
+    .height(Length::Fixed(42.0)) // Button size 42x42 - proper frame for 40x40 icon
     .style(|_theme: &Theme, status: iced::widget::button::Status| {
         // Keep hover effect but remove default highlighting
         let background_color = match status {

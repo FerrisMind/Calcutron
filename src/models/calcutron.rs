@@ -1,4 +1,4 @@
-use iced::{Task, window};
+use iced::{Subscription, Task, window};
 
 use crate::components::views::{
     button_grid::create_button_grid,
@@ -35,6 +35,10 @@ pub struct Calcutron {
     pub window_id: Option<window::Id>,
     // Window size for adaptive layout
     pub window_size: iced::Size,
+    // Saved window size before entering always-on-top mode
+    pub saved_window_size: Option<iced::Size>,
+    // Current display mode (affects UI layout)
+    pub compact_mode: bool,
 }
 
 impl Calcutron {
@@ -47,7 +51,9 @@ impl Calcutron {
             operation: None,
             waiting_for_operand: false,
             window_id: None,
-            window_size: iced::Size::new(300.0, 400.0),
+            window_size: iced::Size::new(320.0, 470.0),
+            saved_window_size: None,
+            compact_mode: false,
         };
         (calculator, Task::none())
     }
@@ -115,7 +121,7 @@ impl Calcutron {
 
     pub fn view(&self) -> iced::Element<'_, Message> {
         // Create the mode display row with list and always on top buttons
-        let mode_row = create_mode_row(self.always_on_top);
+        let mode_row = create_mode_row(self.always_on_top, self.compact_mode);
 
         // Create the history display (smaller font, top line) - 1/3 of total height
         let history_display = create_history_display(self.history.clone());
@@ -130,7 +136,7 @@ impl Calcutron {
         let buttons = create_button_grid(self.get_adaptive_size());
 
         // Create the main layout with the specified proportions
-        let content = create_main_layout(mode_row, display_container, buttons);
+        let content = create_main_layout(mode_row, display_container, buttons, self.compact_mode);
 
         iced::widget::container(content)
             .width(iced::Fill) // Allow width to adapt to window size
@@ -147,5 +153,10 @@ impl Calcutron {
                 ..iced::widget::container::Style::default()
             })
             .into()
+    }
+
+    pub fn subscription(&self) -> Subscription<Message> {
+        // For now, no subscriptions needed
+        Subscription::none()
     }
 }

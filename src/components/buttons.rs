@@ -56,6 +56,7 @@ pub fn digit_button(
     )
     .width(iced::Fill)
     .height(iced::Fill)
+    .padding(1.5) // 1.5px padding for digit buttons (3px total spacing between buttons)
 }
 
 // Helper function to create operator buttons with custom styling (inverse of digit buttons)
@@ -63,6 +64,7 @@ pub fn operator_button(
     icon_path: &str,
     message: Message,
     adaptive_size: crate::models::calcutron::AdaptiveSize,
+    padding: f32,
 ) -> iced::widget::Container<'_, Message, iced::Theme> {
     let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
     container(
@@ -105,6 +107,7 @@ pub fn operator_button(
     )
     .width(iced::Fill)
     .height(iced::Fill)
+    .padding(padding)
 }
 
 // Helper function to create the equals button with custom styling (keeping original icon color)
@@ -112,6 +115,7 @@ pub fn equals_button(
     icon_path: &str,
     message: Message,
     adaptive_size: crate::models::calcutron::AdaptiveSize,
+    padding: f32,
 ) -> iced::widget::Container<'_, Message, iced::Theme> {
     let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
     container(
@@ -148,6 +152,7 @@ pub fn equals_button(
     )
     .width(iced::Fill)
     .height(iced::Fill)
+    .padding(padding)
 }
 
 // Helper function to create the plusminus button with swapped colors
@@ -155,6 +160,7 @@ pub fn plus_minus_button(
     icon_path: &str,
     message: Message,
     adaptive_size: crate::models::calcutron::AdaptiveSize,
+    padding: f32,
 ) -> iced::widget::Container<'_, Message, iced::Theme> {
     let icon_handle = Handle::from_path(format!("static/icons/{}", icon_path));
     container(
@@ -197,4 +203,5 @@ pub fn plus_minus_button(
     )
     .width(iced::Fill)
     .height(iced::Fill)
+    .padding(padding)
 }

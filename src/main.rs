@@ -11,5 +11,6 @@ fn main() -> iced::Result {
         })
         .font(include_bytes!("../static/fonts/Rubik-Regular.ttf").as_slice())
         .theme(|_state: &Calcutron| iced::Theme::Dark)
+        .subscription(Calcutron::subscription)
         .run()
 }

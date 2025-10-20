@@ -412,7 +412,7 @@ impl Calcutron {
                         ),
                         ::iced_widget::core::Element::from(
                             container(
-                                    text("Базовый")
+                                    text("Обычный")
                                         .size(14)
                                         .font(RUBIK_FONT)
                                         .style(|_theme: &Theme| {

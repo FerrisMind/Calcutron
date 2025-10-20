@@ -6,7 +6,7 @@ const RUBIK_FONT: iced::Font = iced::Font::with_name("Rubik");
 
 pub fn create_mode_text() -> Element<'static, (), Theme> {
     container(
-        text("Базовый")
+        text("Обычный")
             .size(20) // Match Calcutron button font size
             .font(RUBIK_FONT)
             .style(|_theme: &Theme| text::Style {
