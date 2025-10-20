@@ -80,15 +80,23 @@ impl ApplicationHandler<()> for CalcutronApp {
         }
     }
 
-    fn user_event(&mut self, _event_loop: &ActiveEventLoop, message: Message) {
+    fn user_event(&mut self, event_loop: &ActiveEventLoop, message: Message) {
         match message {
+            Message::CloseWindow => {
+                event_loop.exit();
+            }
+            Message::BeginWindowDrag => {
+                if let Some(window) = &self.window {
+                    let _ = window.drag_window();
+                }
+            }
             Message::ToggleAlwaysOnTop => {
                 self.state.always_on_top = !self.state.always_on_top;
                 self.set_window_always_on_top(self.state.always_on_top);
             }
-            Message::WindowEvent(event) => {
+            Message::WindowEvent(id, event) => {
                 // Handle other messages if needed
-                let _ = self.state.update(Message::WindowEvent(event));
+                let _ = self.state.update(Message::WindowEvent(id, event));
             }
             _ => {
                 let _ = self.state.update(message);

@@ -17,7 +17,6 @@ pub enum AdaptiveSize {
     Tiny,   // default
 }
 
-#[derive(Default)]
 pub struct Calcutron {
     // Current display value
     pub display: String,
@@ -39,6 +38,12 @@ pub struct Calcutron {
     pub saved_window_size: Option<iced::Size>,
     // Current display mode (affects UI layout)
     pub compact_mode: bool,
+}
+
+impl Default for Calcutron {
+    fn default() -> Self {
+        Calcutron::new().0
+    }
 }
 
 impl Calcutron {
@@ -110,8 +115,10 @@ impl Calcutron {
                 // TODO: Implement list functionality
                 Task::none()
             }
+            Message::CloseWindow => self.window_id.map(window::close).unwrap_or_else(Task::none),
+            Message::BeginWindowDrag => self.window_id.map(window::drag).unwrap_or_else(Task::none),
             Message::ToggleAlwaysOnTop => handle_toggle_always_on_top(self),
-            Message::WindowEvent(event) => handle_window_event(self, event),
+            Message::WindowEvent(id, event) => handle_window_event(self, id, event),
             Message::Ignore => {
                 // Do nothing
                 Task::none()
@@ -136,7 +143,13 @@ impl Calcutron {
         let buttons = create_button_grid(self.get_adaptive_size());
 
         // Create the main layout with the specified proportions
-        let content = create_main_layout(mode_row, display_container, buttons, self.compact_mode);
+        let content = create_main_layout(
+            mode_row,
+            display_container,
+            buttons,
+            self.always_on_top,
+            self.compact_mode,
+        );
 
         iced::widget::container(content)
             .width(iced::Fill) // Allow width to adapt to window size
@@ -156,7 +169,6 @@ impl Calcutron {
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
-        // For now, no subscriptions needed
-        Subscription::none()
+        window::events().map(|(id, event)| Message::WindowEvent(id, event))
     }
 }

@@ -30,10 +30,14 @@ pub enum Message {
     Reciprocal,
     // List button
     ShowList,
+    // Close window
+    CloseWindow,
+    // Begin window drag
+    BeginWindowDrag,
     // Toggle always on top
     ToggleAlwaysOnTop,
-    // Window event
-    WindowEvent(window::Event),
+    // Window event with identifier
+    WindowEvent(window::Id, window::Event),
     // Ignore event
     Ignore,
 }

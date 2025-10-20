@@ -1,13 +1,14 @@
 use iced::Task;
 use windows::Win32::UI::WindowsAndMessaging::{
-    FindWindowA, GetWindowLongA, GWL_STYLE, HWND_NOTOPMOST, HWND_TOPMOST, SetWindowLongA,
-    SetWindowPos, SWP_FRAMECHANGED, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOW_STYLE, WS_CAPTION, WS_MAXIMIZEBOX, WS_MINIMIZEBOX,
+    FindWindowA, GWL_STYLE, GetWindowLongA, HWND_NOTOPMOST, HWND_TOPMOST, SWP_FRAMECHANGED,
+    SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SetWindowLongA, SetWindowPos, WINDOW_STYLE, WS_CAPTION,
+    WS_MAXIMIZEBOX, WS_MINIMIZEBOX,
 };
 
 use crate::models::{calcutron::Calcutron, message::Message};
 
 pub fn handle_toggle_always_on_top(calcutron: &mut Calcutron) -> Task<Message> {
-    let window_id = calcutron.window_id.unwrap_or_else(iced::window::Id::unique);
+    let window_id = calcutron.window_id;
 
     if calcutron.always_on_top {
         // Exiting always-on-top mode - restore previous size and remove always-on-top
@@ -66,7 +67,9 @@ pub fn handle_toggle_always_on_top(calcutron: &mut Calcutron) -> Task<Message> {
             .saved_window_size
             .unwrap_or(iced::Size::new(320.0, 470.0));
         calcutron.window_size = target_size;
-        iced::window::resize(window_id, target_size)
+        window_id
+            .map(|id| iced::window::resize(id, target_size))
+            .unwrap_or_else(Task::none)
     } else {
         // Entering always-on-top mode - save current size and set compact mode
         calcutron.saved_window_size = Some(calcutron.window_size);
@@ -98,24 +101,24 @@ pub fn handle_toggle_always_on_top(calcutron: &mut Calcutron) -> Task<Message> {
                         0,
                         SWP_NOMOVE | SWP_NOSIZE,
                     );
-                           // Disable minimize/maximize buttons in compact mode
-                           disable_window_buttons(hwnd);
+                    // Disable minimize/maximize buttons in compact mode
+                    disable_window_buttons(hwnd);
 
-                           // Disable system title bar for custom chrome, but keep resize border
-                           let current_style = GetWindowLongA(hwnd, GWL_STYLE);
-                           let new_style = WINDOW_STYLE(current_style as u32 & !(WS_CAPTION.0)); // Remove caption, keep thick frame
-                           let _ = SetWindowLongA(hwnd, GWL_STYLE, new_style.0 as i32);
+                    // Disable system title bar for custom chrome, but keep resize border
+                    let current_style = GetWindowLongA(hwnd, GWL_STYLE);
+                    let new_style = WINDOW_STYLE(current_style as u32 & !(WS_CAPTION.0)); // Remove caption, keep thick frame
+                    let _ = SetWindowLongA(hwnd, GWL_STYLE, new_style.0 as i32);
 
-                           // Force window to update its style
-                           let _ = SetWindowPos(
-                               hwnd,
-                               None,
-                               0,
-                               0,
-                               0,
-                               0,
-                               SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED,
-                           );
+                    // Force window to update its style
+                    let _ = SetWindowPos(
+                        hwnd,
+                        None,
+                        0,
+                        0,
+                        0,
+                        0,
+                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED,
+                    );
                 }
             }
         }
@@ -123,7 +126,9 @@ pub fn handle_toggle_always_on_top(calcutron: &mut Calcutron) -> Task<Message> {
         // Set compact window size
         let compact_size = iced::Size::new(250.0, 280.0);
         calcutron.window_size = compact_size;
-        iced::window::resize(window_id, compact_size)
+        window_id
+            .map(|id| iced::window::resize(id, compact_size))
+            .unwrap_or_else(Task::none)
     }
 }
 
@@ -143,18 +148,16 @@ fn enable_window_buttons(hwnd: windows::Win32::Foundation::HWND) {
     }
 }
 
-pub fn handle_window_event(calcutron: &mut Calcutron, event: iced::window::Event) -> Task<Message> {
+pub fn handle_window_event(
+    calcutron: &mut Calcutron,
+    id: iced::window::Id,
+    event: iced::window::Event,
+) -> Task<Message> {
     // Handle window events
+    calcutron.window_id = Some(id);
     match event {
-        iced::window::Event::Opened { .. } => {
-            // We can't get window ID from this event in current Iced version
-            // Window ID will be set when needed via Id::unique()
-            Task::none()
-        }
-        iced::window::Event::CloseRequested => {
-            // We don't have the window ID here, so we can't close it directly
-            Task::none()
-        }
+        iced::window::Event::Opened { .. } => Task::none(),
+        iced::window::Event::CloseRequested => Task::none(),
         iced::window::Event::Resized(size) => {
             calcutron.window_size = size;
             Task::none()

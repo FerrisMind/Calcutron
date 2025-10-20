@@ -1,13 +1,26 @@
-use iced::widget::{column, container, horizontal_space, row, text};
+use iced::widget::{column, container, horizontal_space, mouse_area, row};
 use iced::{Element, Length};
 
-use crate::components::views::always_on_top_button::create_always_on_top_button;
+use crate::components::views::always_on_top_button::{
+    create_always_on_top_button, create_close_button,
+};
 use crate::models::message::Message;
+
+fn drag_spacer() -> Element<'static, Message, iced::Theme> {
+    mouse_area(
+        container(horizontal_space())
+            .width(Length::Fill)
+            .height(Length::Fixed(32.0)),
+    )
+    .on_press(Message::BeginWindowDrag)
+    .into()
+}
 
 pub fn create_main_layout(
     mode_row: Element<'static, Message, iced::Theme>,
     display_container: Element<'static, (), iced::Theme>,
     buttons: Element<'static, Message, iced::Theme>,
+    always_on_top: bool,
     compact_mode: bool,
 ) -> Element<'static, Message, iced::Theme> {
     if compact_mode {
@@ -16,16 +29,12 @@ pub fn create_main_layout(
             // Custom title bar that looks like system title bar
             container(
                 row![
-                    // Left side - app icon area (empty for now)
-                    horizontal_space().width(Length::Fixed(16.0)),
-                    // Center - window title
-                    text("Calcutron")
-                        .size(12)
-                        .color(iced::Color::WHITE),
-                    // Right side - spacing to push button to edge
-                    horizontal_space(),
-                    // Control button area
-                    create_always_on_top_button(true, true),
+                    // Restore (toggle) button pinned to the left edge
+                    create_always_on_top_button(always_on_top, true),
+                    // Spacer between buttons that also allows dragging
+                    drag_spacer(),
+                    // Close button aligned to the right edge
+                    create_close_button(true),
                 ]
                 .spacing(0)
                 .align_y(iced::alignment::Vertical::Center)
@@ -42,7 +51,6 @@ pub fn create_main_layout(
                 ..Default::default()
             })
             .padding([0, 0]),
-
             // Main calculator content below custom title bar
             container(
                 column![
