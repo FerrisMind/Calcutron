@@ -1,4 +1,5 @@
 use iced::{Subscription, Task, window};
+extern crate image;
 
 use crate::components::views::{
     button_grid::create_button_grid,
@@ -38,11 +39,29 @@ pub struct Calcutron {
     pub saved_window_size: Option<iced::Size>,
     // Current display mode (affects UI layout)
     pub compact_mode: bool,
+    // Application icon
+    pub app_icon: Option<winit::window::Icon>,
 }
 
 impl Default for Calcutron {
     fn default() -> Self {
         Calcutron::new().0
+    }
+}
+
+/// Load application icon from ICO file
+fn load_app_icon() -> Option<winit::window::Icon> {
+    let icon_bytes = include_bytes!("../../static/app_icons/icon.ico");
+    match image::load_from_memory_with_format(icon_bytes, image::ImageFormat::Ico) {
+        Ok(img) => {
+            let rgba = img.to_rgba8();
+            let (width, height) = rgba.dimensions();
+            winit::window::Icon::from_rgba(rgba.into_raw(), width, height).ok()
+        }
+        Err(e) => {
+            eprintln!("Failed to load app icon: {}", e);
+            None
+        }
     }
 }
 
@@ -59,6 +78,7 @@ impl Calcutron {
             window_size: iced::Size::new(320.0, 470.0),
             saved_window_size: None,
             compact_mode: false,
+            app_icon: load_app_icon(),
         };
         (calculator, Task::none())
     }

@@ -1,11 +1,45 @@
 use iced::Task;
+extern crate image;
 use windows::Win32::UI::WindowsAndMessaging::{
     FindWindowA, GWL_STYLE, GetWindowLongA, HWND_NOTOPMOST, HWND_TOPMOST, SWP_FRAMECHANGED,
     SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SetWindowLongA, SetWindowPos, WINDOW_STYLE, WS_CAPTION,
-    WS_MAXIMIZEBOX, WS_MINIMIZEBOX,
+    WS_MAXIMIZEBOX, WS_MINIMIZEBOX, SendMessageA, WM_SETICON, ICON_BIG, ICON_SMALL, HICON, LoadImageA, IMAGE_ICON, LR_LOADFROMFILE,
 };
+use windows::Win32::Foundation::{HINSTANCE, WPARAM};
 
 use crate::models::{calcutron::Calcutron, message::Message};
+
+/// Load Windows HICON directly from ICO file
+fn load_hicon_from_file() -> Option<HICON> {
+    use windows::core::PCSTR;
+    use std::ffi::CString;
+
+    // Create path to icon file
+    let icon_path = "static/app_icons/icon.ico";
+    let c_path = CString::new(icon_path).ok()?;
+
+    unsafe {
+        let hicon_result = LoadImageA(
+            Some(HINSTANCE::default()),
+            PCSTR(c_path.as_ptr() as *const u8),
+            IMAGE_ICON,
+            0, // Use default width
+            0, // Use default height
+            LR_LOADFROMFILE,
+        );
+
+        match hicon_result {
+            Ok(handle) => {
+                if handle.is_invalid() {
+                    None
+                } else {
+                    Some(HICON(handle.0))
+                }
+            }
+            Err(_) => None,
+        }
+    }
+}
 
 pub fn handle_toggle_always_on_top(calcutron: &mut Calcutron) -> Task<Message> {
     let window_id = calcutron.window_id;
@@ -156,7 +190,41 @@ pub fn handle_window_event(
     // Handle window events
     calcutron.window_id = Some(id);
     match event {
-        iced::window::Event::Opened { .. } => Task::none(),
+        iced::window::Event::Opened { .. } => {
+            // Set application icon when window opens
+            if calcutron.app_icon.is_some() {
+                #[cfg(target_os = "windows")]
+                {
+                    use windows::core::PCSTR;
+                    use windows::Win32::Foundation::LPARAM;
+
+                    // Find the window handle
+                    let title = "Calcutron";
+                    let title_bytes = title.as_bytes();
+                    let mut title_vec = title_bytes.to_vec();
+                    title_vec.push(0);
+
+                    let hwnd = unsafe { FindWindowA(PCSTR::null(), PCSTR(title_vec.as_ptr())) };
+
+                    if let Ok(hwnd) = hwnd && !hwnd.is_invalid() {
+                        // Load HICON directly from file
+                        if let Some(hicon) = load_hicon_from_file() {
+                            // Set both big and small icons
+                            unsafe {
+                                SendMessageA(hwnd, WM_SETICON, WPARAM(ICON_BIG as usize), LPARAM(hicon.0 as isize));
+                                SendMessageA(hwnd, WM_SETICON, WPARAM(ICON_SMALL as usize), LPARAM(hicon.0 as isize));
+                            }
+                            eprintln!("Application icon successfully set on window");
+                        } else {
+                            eprintln!("Failed to load HICON from file");
+                        }
+                    } else {
+                        eprintln!("Could not find window handle to set icon");
+                    }
+                }
+            }
+            Task::none()
+        }
         iced::window::Event::CloseRequested => Task::none(),
         iced::window::Event::Resized(size) => {
             calcutron.window_size = size;

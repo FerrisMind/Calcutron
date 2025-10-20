@@ -20,8 +20,9 @@ path = "src/main.rs"
 [dependencies]
 iced = { version = "0.13.1", features = ["svg"] }
 iced_winit = "0.13.0"
+image = { version = "0.25.8", features = ["ico"] }
 raw-window-handle = "0.6.2"
-windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }
 winit = "0.30.12"
 
 [package.metadata.packager]
